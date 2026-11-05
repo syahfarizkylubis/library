@@ -26,7 +26,7 @@ if (isset($_POST['login_student'])) {
             exit;
         }
     }
-    $error = "NPM atau password salah, atau akun belum terdaftar!";
+    $error = "NIS atau password salah, atau akun belum terdaftar!";
 }
 ?>
 <!DOCTYPE html>

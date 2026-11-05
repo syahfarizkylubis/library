@@ -21,7 +21,7 @@ if (isset($_POST['login'])) {
             exit;
         }
     }
-    $error = "Username atau password Headmaster salah!";
+    $error = "Username atau password Administrator salah!";
 }
 ?>
 <!DOCTYPE html>
