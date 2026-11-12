@@ -138,10 +138,11 @@ body {
     overflow-x: auto;
 }
 
+/* MODIFIKASI DIMULAI DARI SINI */
 table.spreadsheet {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: auto; /* Diubah dari fixed agar kolom merenggang sesuai teks */
 }
 
 table.spreadsheet th, table.spreadsheet td {
@@ -149,7 +150,10 @@ table.spreadsheet th, table.spreadsheet td {
     padding: 10px 12px;
     text-align: left;
     font-size: 0.9rem;
+    white-space: normal; /* Memaksa kalimat turun ke baris baru jika kepanjangan */
     word-wrap: break-word;
+    overflow-wrap: break-word; /* Mencegah satu kata/kalimat terpotong keluar batas sel */
+    vertical-align: top;
 }
 
 table.spreadsheet th {
@@ -158,12 +162,14 @@ table.spreadsheet th {
     font-weight: 600;
 }
 
-.col-npm { width: 130px; }
-.col-nama { width: 220px; }
-.col-date { width: 110px; }
-.col-status { width: 120px; }
-.col-denda { width: 120px; }
-.col-aksi { width: 130px; }
+/* Mengubah width menjadi min-width agar sel tidak terkunci dan menjepit teks */
+.col-npm { min-width: 130px; }
+.col-nama { min-width: 220px; }
+.col-date { min-width: 110px; }
+.col-status { min-width: 120px; }
+.col-denda { min-width: 120px; }
+.col-aksi { min-width: 130px; }
+/* MODIFIKASI SELESAI */
 
 .btn {
     display: inline-block;
@@ -210,7 +216,7 @@ table.spreadsheet th {
 
 .login-container {
     width: 380px;
-    margin: 80px auto; /* Membuat posisi otomatis berada di tengah */
+    margin: 80px auto;
     padding: 30px;
     background: #fff;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -223,18 +229,7 @@ table.spreadsheet th {
     color: #1e293b;
 }
 
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-    color: #475569;
-}
-
-.form-group input {
+.login-container .form-group input {
     width: 100%;
     padding: 10px;
     border: 1px solid #cbd5e1;

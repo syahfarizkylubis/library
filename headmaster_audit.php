@@ -32,7 +32,6 @@ if (isset($_GET['p_denda']) && !isset($_GET['tab'])) {
 // Kondisi Query SQL Berdasarkan Filter Kategori Aksi
 $where_sql = "WHERE 1=1";
 if ($filter_aksi === 'Terbaru') {
-    // Kriteria 'Terbaru' sama dengan default (diurutkan berdasarkan ID/waktu terbaru)
     $order_sql = " ORDER BY id DESC";
 } elseif ($filter_aksi === 'Peminjaman Buku') {
     $where_sql .= " AND (aksi LIKE '%Pinjam%' OR aksi LIKE '%Peminjaman%')";
@@ -53,7 +52,6 @@ if ($filter_aksi === 'Terbaru') {
     $where_sql .= " AND (aksi LIKE '%Denda%' OR aksi LIKE '%Pembayaran%')";
     $order_sql = " ORDER BY id DESC";
 } else {
-    // 'Semua (Default)'
     $order_sql = " ORDER BY id DESC";
 }
 
@@ -116,7 +114,7 @@ $total_pendapatan = mysqli_fetch_assoc($q_rev)['total_pendapatan'] ?? 0;
             color: #1e293b;
         }
         .tab-btn.active {
-            background: #b45309; /* Aksen warna Headmaster */
+            background: #b45309; 
             color: #ffffff;
             border-color: #b45309;
             box-shadow: 0 2px 4px rgba(180, 83, 9, 0.2);
@@ -130,13 +128,14 @@ $total_pendapatan = mysqli_fetch_assoc($q_rev)['total_pendapatan'] ?? 0;
             display: block;
         }
 
-        /* Styling Paginasi */
+        /* Styling Paginasi Modern & Rapi */
         .pagination-container {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 6px;
-            margin-top: 20px;
+            margin-top: 25px;
+            flex-wrap: wrap;
         }
         .pagination-btn {
             background: #ffffff;
@@ -157,6 +156,35 @@ $total_pendapatan = mysqli_fetch_assoc($q_rev)['total_pendapatan'] ?? 0;
             background: #b45309;
             color: #ffffff;
             border-color: #b45309;
+        }
+        .pagination-jump {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 15px;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+        .pagination-jump input {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        .pagination-jump button {
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .pagination-jump button:hover {
+            background: #e2e8f0;
         }
     </style>
 </head>
@@ -274,14 +302,48 @@ $total_pendapatan = mysqli_fetch_assoc($q_rev)['total_pendapatan'] ?? 0;
                         </table>
                     </div>
 
-                    <!-- Paginasi untuk Log Aktivitas -->
+                    <!-- Paginasi Rapi dengan Panah & Input Manual untuk Log Aktivitas -->
                     <?php if ($tot_halaman_log > 1): ?>
                         <div class="pagination-container">
-                            <?php for ($i = 1; $i <= $tot_halaman_log; $i++): ?>
+                            <!-- Tombol Panah Kiri (Previous) -->
+                            <?php if ($page_log > 1): ?>
+                                <a href="headmaster_audit.php?p_log=<?= ($page_log - 1); ?>&p_denda=<?= $page_denda; ?>&tab=log-aktivitas&aksi=<?= urlencode($filter_aksi); ?>" class="pagination-btn">« Prev</a>
+                            <?php endif; ?>
+
+                            <!-- Nomor Halaman (Maksimal menampilkan 5 nomor di sekitar halaman aktif) -->
+                            <?php 
+                            $start_p = max(1, $page_log - 2);
+                            $end_p = min($tot_halaman_log, $page_log + 2);
+                            if ($start_p > 1) {
+                                echo '<a href="headmaster_audit.php?p_log=1&p_denda='.$page_denda.'&tab=log-aktivitas&aksi='.urlencode($filter_aksi).'" class="pagination-btn">1</a>';
+                                if ($start_p > 2) echo '<span style="padding: 0 4px; color: #64748b;">...</span>';
+                            }
+                            for ($i = $start_p; $i <= $end_p; $i++): 
+                            ?>
                                 <a href="headmaster_audit.php?p_log=<?= $i; ?>&p_denda=<?= $page_denda; ?>&tab=log-aktivitas&aksi=<?= urlencode($filter_aksi); ?>" class="pagination-btn <?= ($i == $page_log) ? 'active' : ''; ?>">
-                                    Halaman <?= $i; ?>
+                                    <?= $i; ?>
                                 </a>
-                            <?php endfor; ?>
+                            <?php endfor; 
+                            if ($end_p < $tot_halaman_log) {
+                                if ($end_p < $tot_halaman_log - 1) echo '<span style="padding: 0 4px; color: #64748b;">...</span>';
+                                echo '<a href="headmaster_audit.php?p_log='.$tot_halaman_log.'&p_denda='.$page_denda.'&tab=log-aktivitas&aksi='.urlencode($filter_aksi).'" class="pagination-btn">'.$tot_halaman_log.'</a>';
+                            }
+                            ?>
+
+                            <!-- Tombol Panah Kanan (Next) -->
+                            <?php if ($page_log < $tot_halaman_log): ?>
+                                <a href="headmaster_audit.php?p_log=<?= ($page_log + 1); ?>&p_denda=<?= $page_denda; ?>&tab=log-aktivitas&aksi=<?= urlencode($filter_aksi); ?>" class="pagination-btn">Next »</a>
+                            <?php endif; ?>
+
+                            <!-- Form Input Manual Lompat Halaman -->
+                            <form method="GET" action="headmaster_audit.php" class="pagination-jump">
+                                <input type="hidden" name="tab" value="log-aktivitas">
+                                <input type="hidden" name="aksi" value="<?= htmlspecialchars($filter_aksi); ?>">
+                                <input type="hidden" name="p_denda" value="<?= $page_denda; ?>">
+                                <span>Hal:</span>
+                                <input type="number" name="p_log" min="1" max="<?= $tot_halaman_log; ?>" value="<?= $page_log; ?>">
+                                <button type="submit">Go</button>
+                            </form>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -330,14 +392,48 @@ $total_pendapatan = mysqli_fetch_assoc($q_rev)['total_pendapatan'] ?? 0;
                         </table>
                     </div>
 
-                    <!-- Paginasi untuk Rincian Denda -->
+                    <!-- Paginasi Rapi dengan Panah & Input Manual untuk Rincian Denda -->
                     <?php if ($tot_halaman_denda > 1): ?>
                         <div class="pagination-container">
-                            <?php for ($j = 1; $j <= $tot_halaman_denda; $j++): ?>
+                            <!-- Tombol Panah Kiri (Previous) -->
+                            <?php if ($page_denda > 1): ?>
+                                <a href="headmaster_audit.php?p_log=<?= $page_log; ?>&p_denda=<?= ($page_denda - 1); ?>&tab=rincian-denda&aksi=<?= urlencode($filter_aksi); ?>" class="pagination-btn">« Prev</a>
+                            <?php endif; ?>
+
+                            <!-- Nomor Halaman -->
+                            <?php 
+                            $start_pd = max(1, $page_denda - 2);
+                            $end_pd = min($tot_halaman_denda, $page_denda + 2);
+                            if ($start_pd > 1) {
+                                echo '<a href="headmaster_audit.php?p_log='.$page_log.'&p_denda=1&tab=rincian-denda&aksi='.urlencode($filter_aksi).'" class="pagination-btn">1</a>';
+                                if ($start_pd > 2) echo '<span style="padding: 0 4px; color: #64748b;">...</span>';
+                            }
+                            for ($j = $start_pd; $j <= $end_pd; $j++): 
+                            ?>
                                 <a href="headmaster_audit.php?p_log=<?= $page_log; ?>&p_denda=<?= $j; ?>&tab=rincian-denda&aksi=<?= urlencode($filter_aksi); ?>" class="pagination-btn <?= ($j == $page_denda) ? 'active' : ''; ?>">
-                                    Halaman <?= $j; ?>
+                                    <?= $j; ?>
                                 </a>
-                            <?php endfor; ?>
+                            <?php endfor; 
+                            if ($end_pd < $tot_halaman_denda) {
+                                if ($end_pd < $tot_halaman_denda - 1) echo '<span style="padding: 0 4px; color: #64748b;">...</span>';
+                                echo '<a href="headmaster_audit.php?p_log='.$page_log.'&p_denda='.$tot_halaman_denda.'&tab=rincian-denda&aksi='.urlencode($filter_aksi).'" class="pagination-btn">'.$tot_halaman_denda.'</a>';
+                            }
+                            ?>
+
+                            <!-- Tombol Panah Kanan (Next) -->
+                            <?php if ($page_denda < $tot_halaman_denda): ?>
+                                <a href="headmaster_audit.php?p_log=<?= $page_log; ?>&p_denda=<?= ($page_denda + 1); ?>&tab=rincian-denda&aksi=<?= urlencode($filter_aksi); ?>" class="pagination-btn">Next »</a>
+                            <?php endif; ?>
+
+                            <!-- Form Input Manual Lompat Halaman -->
+                            <form method="GET" action="headmaster_audit.php" class="pagination-jump">
+                                <input type="hidden" name="tab" value="rincian-denda">
+                                <input type="hidden" name="aksi" value="<?= htmlspecialchars($filter_aksi); ?>">
+                                <input type="hidden" name="p_log" value="<?= $page_log; ?>">
+                                <span>Hal:</span>
+                                <input type="number" name="p_denda" min="1" max="<?= $tot_halaman_denda; ?>" value="<?= $page_denda; ?>">
+                                <button type="submit">Go</button>
+                            </form>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -349,15 +445,12 @@ $total_pendapatan = mysqli_fetch_assoc($q_rev)['total_pendapatan'] ?? 0;
     <!-- SCRIPT TABS NAVIGASI -->
     <script>
     function switchTab(tabId, btnElement) {
-        // Sembunyikan semua konten tab
         const contents = document.querySelectorAll('.tab-content');
         contents.forEach(content => content.classList.remove('active'));
 
-        // Hapus status aktif dari semua tombol
         const buttons = document.querySelectorAll('.tab-btn');
         buttons.forEach(btn => btn.classList.remove('active'));
 
-        // Tampilkan tab yang dipilih & aktifkan tombolnya
         document.getElementById(tabId).classList.add('active');
         btnElement.classList.add('active');
     }

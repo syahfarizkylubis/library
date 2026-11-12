@@ -2,25 +2,62 @@
 session_start();
 require 'koneksi_db.php';
 
+// Jika sudah login, langsung arahkan ke dashboard
+if (isset($_SESSION['login']) && $_SESSION['login'] === true) {
+    header("Location: dashboard.php");
+    exit;
+}
+
 $error = '';
 
 if (isset($_POST['login'])) {
-    $username = mysqli_real_escape_string($koneksi, $_POST['username']);
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    $result = mysqli_query($koneksi, "SELECT * FROM users WHERE username = '$username'");
+    // 1. Gunakan Prepared Statement untuk mencegah SQL Injection
+    $stmt = mysqli_prepare($koneksi, "SELECT id, username, password, nama_lengkap FROM users WHERE username = ? LIMIT 1");
     
-    if (mysqli_num_rows($result) === 1) {
-        $row = mysqli_fetch_assoc($result);
-        
-        if ($password === $row['password']) {
-            $_SESSION['login'] = true;
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['user'] = $row['nama_lengkap'];
-            header("Location: dashboard.php");
-            exit;
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "s", $username);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+            $db_password = $row['password'];
+            $is_valid = false;
+
+            // 2. Cek apakah password cocok menggunakan password_verify (Bcrypt Hash)
+            if (password_verify($password, $db_password)) {
+                $is_valid = true;
+            } 
+            // Fallback transisi: Jika di DB masih plain-text, cocokkan lalu otomatis upgrade ke Hash
+            elseif ($password === $db_password) {
+                $is_valid = true;
+                $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                $upd = mysqli_prepare($koneksi, "UPDATE users SET password = ? WHERE id = ?");
+                if ($upd) {
+                    mysqli_stmt_bind_param($upd, "si", $new_hash, $row['id']);
+                    mysqli_stmt_execute($upd);
+                    mysqli_stmt_close($upd);
+                }
+            }
+
+            if ($is_valid) {
+                // 3. Cegah Session Fixation dengan regenerasi ID session
+                session_regenerate_id(true);
+                
+                $_SESSION['login'] = true;
+                $_SESSION['username'] = $row['username'];
+                $_SESSION['user'] = $row['nama_lengkap'];
+                
+                mysqli_stmt_close($stmt);
+                header("Location: dashboard.php");
+                exit;
+            }
         }
+        mysqli_stmt_close($stmt);
     }
+
     $error = "Username atau password salah!";
 }
 ?>

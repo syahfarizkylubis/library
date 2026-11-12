@@ -303,7 +303,7 @@ $genre_filter = isset($_GET['genre_filter']) ? mysqli_real_escape_string($koneks
                                 <tr>
                                     <th style="width: 50px;">No</th>
                                     <th style="width: 80px;">Cover</th>
-                                    <th style="width: 110px;">Barcode</th>
+                                    <th style="width: 110px;">No. Inventory</th>
                                     <th>Nama Buku</th>
                                     <th>Penulis</th>
                                     <th>Penerbit</th>

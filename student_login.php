@@ -10,22 +10,51 @@ if (isset($_SESSION['student_login']) && $_SESSION['student_login'] === true) {
 $error = '';
 
 if (isset($_POST['login_student'])) {
-    $npm = trim(mysqli_real_escape_string($koneksi, $_POST['npm']));
+    $npm = trim($_POST['npm']);
     $password = trim($_POST['password']);
 
-    $result = mysqli_query($koneksi, "SELECT * FROM students WHERE npm = '$npm'");
+    // 1. Gunakan Prepared Statement
+    $stmt = mysqli_prepare($koneksi, "SELECT id, npm, password, nama_lengkap FROM students WHERE npm = ? LIMIT 1");
     
-    if ($result && mysqli_num_rows($result) === 1) {
-        $row = mysqli_fetch_assoc($result);
-        
-        if ($password === $row['password']) {
-            $_SESSION['student_login'] = true;
-            $_SESSION['student_npm'] = $row['npm'];
-            $_SESSION['student_name'] = $row['nama_lengkap'];
-            header("Location: student_dashboard.php");
-            exit;
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "s", $npm);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+            $db_password = $row['password'];
+            $is_valid = false;
+
+            // 2. Verifikasi Password Hash (dengan auto-upgrade jika masih plain-text)
+            if (password_verify($password, $db_password)) {
+                $is_valid = true;
+            } elseif ($password === $db_password) {
+                $is_valid = true;
+                $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                $upd = mysqli_prepare($koneksi, "UPDATE students SET password = ? WHERE id = ?");
+                if ($upd) {
+                    mysqli_stmt_bind_param($upd, "si", $new_hash, $row['id']);
+                    mysqli_stmt_execute($upd);
+                    mysqli_stmt_close($upd);
+                }
+            }
+
+            if ($is_valid) {
+                // 3. Regenerasi Session ID untuk keamanan
+                session_regenerate_id(true);
+
+                $_SESSION['student_login'] = true;
+                $_SESSION['student_npm'] = $row['npm'];
+                $_SESSION['student_name'] = $row['nama_lengkap'];
+                
+                mysqli_stmt_close($stmt);
+                header("Location: student_dashboard.php");
+                exit;
+            }
         }
+        mysqli_stmt_close($stmt);
     }
+
     $error = "NIS atau password salah, atau akun belum terdaftar!";
 }
 ?>

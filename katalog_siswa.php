@@ -257,7 +257,7 @@ $res_tahun_opt = mysqli_query($koneksi, "SELECT DISTINCT tahun_terbit FROM buku 
                                     <div class="catalog-title"><?= htmlspecialchars($book['nama_buku']); ?></div>
                                     <div class="catalog-info"><strong>Penulis:</strong> <?= htmlspecialchars($book['penulis']); ?></div>
                                     <div class="catalog-info"><strong>Penerbit:</strong> <?= htmlspecialchars($book['penerbit']); ?></div>
-                                    <div class="catalog-info"><strong>Barcode:</strong> <span style="font-family: monospace;"><?= $book['barcode']; ?></span></div>
+                                    <div class="catalog-info"><strong>No. Inventory:</strong> <span style="font-family: monospace;"><?= $book['barcode']; ?></span></div>
                                     <div class="catalog-info"><strong>Tahun:</strong> <?= $book['tahun_terbit']; ?> | <?= $book['jumlah_halaman']; ?> Hlm</div>
                                     <div><span class="catalog-badge"><?= htmlspecialchars($book['genre']); ?></span></div>
                                     

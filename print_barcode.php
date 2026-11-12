@@ -11,9 +11,7 @@ $nama = isset($_GET['nama']) ? htmlspecialchars($_GET['nama']) : 'Buku Perpustak
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Cetak Barcode - <?= $code; ?></title>
-    <!-- Library JsBarcode untuk merender garis barcode asli -->
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <title>Cetak Nomer Inventory - <?= $code; ?></title>
     <style>
         * {
             box-sizing: border-box;
@@ -65,18 +63,36 @@ $nama = isset($_GET['nama']) ? htmlspecialchars($_GET['nama']) : 'Buku Perpustak
             font-size: 0.9rem;
             font-weight: bold;
             color: #1e293b;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             text-transform: uppercase;
         }
         .book-title {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #475569;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             word-wrap: break-word;
         }
-        svg#barcode {
-            max-width: 100%;
-            height: auto;
+        /* Style pengganti barcode menjadi Nomer Inventory yang jelas & menonjol */
+        .inventory-box {
+            background: #f8fafc;
+            border: 1.5px dashed #0284c7;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .inventory-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        .inventory-code {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #0f172a;
+            letter-spacing: 1px;
         }
         .btn-group {
             margin-top: 20px;
@@ -117,13 +133,16 @@ $nama = isset($_GET['nama']) ? htmlspecialchars($_GET['nama']) : 'Buku Perpustak
         <input type="text" id="inputInstitusi" placeholder="Contoh: SMA Negeri 1 Jakarta / Universitas X">
     </div>
 
-    <!-- Tampilan Barcode yang Akan Dicetak -->
+    <!-- Tampilan Kartu Nomer Inventory yang Akan Dicetak -->
     <div class="ticket-container">
         <div class="header-title" id="displayInstitusi">DIGITAL LIBRARY WEB MANAGER</div>
         <div class="book-title"><?= $nama; ?></div>
         
-        <!-- Elemen SVG Barcode -->
-        <svg id="barcode"></svg>
+        <!-- Kotak Nomer Inventory -->
+        <div class="inventory-box">
+            <div class="inventory-label">Nomer Inventory</div>
+            <div class="inventory-code"><?= $code; ?></div>
+        </div>
     </div>
 
     <div class="btn-group">
@@ -151,18 +170,6 @@ $nama = isset($_GET['nama']) ? htmlspecialchars($_GET['nama']) : 'Buku Perpustak
             const val = this.value.trim() !== "" ? this.value : DEFAULT_LABEL;
             displayInstitusi.textContent = val;
             localStorage.setItem('dlwm_institution_label', val);
-        });
-
-        // 3. Render Barcode Code128
-        JsBarcode("#barcode", "<?= $code; ?>", {
-            format: "CODE128",
-            lineColor: "#000",
-            width: 2.5,
-            height: 65,
-            displayValue: true,
-            fontSize: 16,
-            fontOptions: "bold",
-            margin: 5
         });
     </script>
 
